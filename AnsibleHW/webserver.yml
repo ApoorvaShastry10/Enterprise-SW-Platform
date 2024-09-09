@@ -1,0 +1,37 @@
+---
+- hosts: webservers
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+    
+    - name: Change Apache port to 8080
+      lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^Listen 80'
+        line: 'Listen 8080'
+        state: present
+      notify: Restart Apache
+
+    - name: Update the default Apache site to listen on port 8080
+      lineinfile:
+        path: /etc/apache2/sites-available/000-default.conf
+        regexp: '<VirtualHost \*:80>'
+        line: '<VirtualHost *:8080>'
+        state: present
+      notify: Restart Apache
+
+    - name: Create a custom index.html
+      copy:
+        dest: /var/www/html/index.html
+        content: "Hello World from SJSU-{{ inventory_hostname[-1] }}"
+
+  handlers:
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
