@@ -1,0 +1,18 @@
+- name: Un-deploy Web Servers
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Stop Apache service
+      service:
+        name: apache2
+        state: stopped
+     
+    - name: Uninstall Apache
+      apt:
+        name: apache2
+        state: absent
+      
+    - name: Remove index.html
+      file:
+        path: /var/www/html/index.html
+        state: absent
